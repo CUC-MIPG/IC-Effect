@@ -1,0 +1,1619 @@
+<!-- 文档类型声明，告知浏览器使用 HTML5 -->
+<!DOCTYPE html>
+<!-- 页面语言设置为中文简体 -->
+<html lang="zh-CN">
+<head>
+  <!-- 字符编码，保证中文不乱码 -->
+  <meta charset="UTF-8" />
+  <!-- 视口设置，移动端自适应 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 浏览器标签页标题 -->
+  <title>IC-Effect: Precise and Efficient Video Effects Editing via In-Context Learning</title>
+  <!-- 引入展示数据文件 -->
+  <script src="static/modeSlides.js"></script>
+  <!-- 引入模式切换脚本 -->
+  <script src="static/showcase-data.js"></script>
+  <script src="static/twoRowData.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+
+  <!-- 页面样式定义 -->
+  <style>
+    /* 调色：如需改变整体色系，修改下方变量即可，确保文本与背景有足够对比度 */
+    :root {
+      --bg: #ffffff;     /* 背景色 */
+      --card: #ffffff;   /* 卡片背景 */
+      --accent: #000000; /* 按钮/强调色 */
+      --muted: #000000;  /* 次要文字色 */
+      --text: #000000;   /* 正文字色（当前为黑色，需自行调整对比度） */
+      --border: rgb(255, 255, 255); /* 边框色 */
+      /* 新增：统一展示区样式变量（与两行三列展示区一致） */
+      --showcase-bg: #f6f8fb;
+      --showcase-border: #dfe6f0;
+      --showcase-text: #666;
+    }
+    /* 全局元素盒模型 */
+    * { box-sizing: border-box; }
+    /* 页面主体样式：可在 body-bg-image 设置背景图 */
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      /* 如果需要背景图，将 url(...) 改为你的图片地址；不需要时保持 none */
+      --body-bg-image: none; /* 示例：url("assets/background.jpg") */
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0), transparent 25%),
+        radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0), transparent 30%),
+        var(--body-bg-image),
+        var(--bg);
+      background-size: cover;      /* 背景图铺满 */
+      background-position: center; /* 背景图居中 */
+      background-repeat: no-repeat;/* 不重复 */
+      color: var(--text);
+      min-height: 100vh;
+    }
+    /* 链接默认继承颜色，去掉下划线 */
+    a { color: inherit; text-decoration: none; }
+    /* 顶部区域（如果需要导航可恢复） */
+    header {
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    /* 导航容器宽度与布局 */
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    /* 左侧品牌文字 */
+    .nav .brand {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    /* 右侧导航链接排列 */
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    /* 页面整体内容容器 */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+    .publication-authors {
+        font-family: 'Google Sans', sans-serif;
+    }
+    .author-block {
+        display: inline-block;
+    }
+    .publication-authors .author-block a[href] {
+    color: #0066cc; /* 蓝色（可根据需要调整具体色值） */
+    text-decoration: underline; /* 可选：添加下划线区分可点击链接 */
+    }
+    .publication-authors .author-block a[href]:hover {
+        color: #004080; /* 悬停时加深颜色，增强交互感 */
+    }
+    .footer .icon-link {
+    font-size: 25px;
+    color: #e70909;
+    }
+    .link-block a {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    }
+    /* 顶部英雄区样式 */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      padding: 40px 28px;
+      text-align: center;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 80px rgba(255, 255, 255, 0);
+    }
+    /* 英雄区内容宽度与布局 */
+    .hero-content {
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    /* 英雄区标题样式 */
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 42px);
+      letter-spacing: 0.01em;
+    }
+    /* 英雄区副标题样式 */
+    .hero .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    /* 数学符号样式 */
+    .math {
+    font-family: 'Times New Roman', Times, serif;
+    font-style: italic;
+    white-space: nowrap;
+    margin: 0 0.2em;
+    }
+    .math sub, .math sup {
+    font-size: 0.8em;
+    position: relative;
+    vertical-align: baseline;
+    }
+    .math sub {
+    bottom: -0.3em;
+    }
+    .math sup {
+    top: -0.4em;
+    }
+    /* 作者/机构等元信息样式 */
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    /* 按钮行容器样式 */
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    /* 按钮基础样式 */
+    .button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: linear-gradient(120deg, #000000, #000000);
+      color: #ffffff;
+      font-weight: 600;
+      transition: all 0.18s ease;
+    }
+    /* 按钮悬停效果 */
+    .button:hover { border-color: var(--accent); transform: translateY(-1px); }
+    /* 主要按钮渐变色 */
+    .button.primary { background: linear-gradient(120deg, #3a3939, #3a3939); color: #ffffff;  }
+    /* 媒体容器（视频/图） */
+    .media {
+      background: #000000;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 832 / 480;
+    }
+
+    .full-width-media {
+      aspect-ratio: auto; /* 移除固定比例 */
+      max-width: 100%;    /* 限制最大宽度 */
+      margin: 0 auto;      /* 居中显示 */
+    }
+
+    .full-width-media img {
+      width: 100%;         /* 宽度填满容器 */
+      height: auto;        /* 高度自动调整 */
+      display: block;      /* 块级显示 */
+    }
+    /* 媒体内的 img/video 填充 */
+    .media video, .media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* 通用分区外边距与布局 */
+    .section {
+      margin-top: 48px;
+      display: grid;
+      gap: 20px;
+    }
+    /* 分区标题样式 */
+    .section h2 { margin: 0; letter-spacing: 0.02em; }
+    /* 卡片基础样式 */
+    .card {
+      padding: 22px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0);
+    }
+    /* 网格布局（结果/亮点等） */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    /* 单个结果卡片样式 */
+    .result-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000000;
+    }
+    /* 结果卡片内媒体样式 */
+    .result-card video, .result-card img { width: 100%; height: 190px; object-fit: cover; display: block; }
+    /* 结果卡片文字说明 */
+    .result-card .info {
+      padding: 12px 14px 14px;
+      color: #ffffff;
+      font-size: 14px;
+    }
+    /* 结果轮播整体样式 */
+    .carousel {
+      background: #f6f8fb;
+      border: 1px solid #dfe6f0;
+      border-radius: 18px;
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+    .carousel-header {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .mode-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .mode-btn {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #c9d9e5;
+      background: #f4f7fb;
+      color: #2f5573;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-btn:hover { background: #f7eae7; }
+    .mode-btn.active {
+      background: #d1e4ff;
+      border-color: #7aa6d9;
+      color: #1f3f63;
+      box-shadow: 0 6px 14px rgba(31, 63, 99, 0.12);
+    }
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #7a96a8;
+    }
+    .carousel-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid #7d7d7d;
+      background: #7d7d7d;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .carousel-btn:hover { background: #0569cd; }
+    .carousel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+      align-items: start;
+    }
+    .carousel-label {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: #dbe8f4;
+      color: #2b4660;
+      font-weight: 700;
+      margin-bottom: 10px;
+      /* align-self: flex-start; */
+      width: 100%;
+      align-self: center;
+    }
+    .carousel-block {
+      display: grid;
+      gap: 12px;
+    }
+    .carousel-text {
+      font-size: 16px;
+      color: #1f2d3d;
+      line-height: 1.6;
+      max-width: 280px;
+    }
+    .carousel-media {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f0dfdf;
+      border: 1px solid #c9d9e5;
+    }
+    .carousel-media img, .carousel-media video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .media-hidden {
+      display: none !important;
+    }
+    .media-visible {
+      display: block !important;
+    }
+    @media (max-width: 960px) {
+      .carousel-grid { grid-template-columns: 1fr; }
+      .carousel-text { max-width: 100%; }
+    }
+    /* 代码块（BibTeX）样式 */
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: #bebcbc2c;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    /* 页脚样式 */
+    footer {
+      margin-top: 48px;
+      padding: 20px 0 10px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+    /* 移动端适配：导航与英雄区内边距 */
+    @media (max-width: 640px) {
+      .nav { flex-direction: column; align-items: flex-start; }
+      .nav-links { flex-wrap: wrap; }
+      .hero { padding: 24px; }
+    }
+
+    /* 单输入展示区样式 - 关键修改：统一背景和边框色 */
+    .showcase {
+      background: var(--showcase-bg); /* 改为统一背景色 */
+      border: 1px solid var(--showcase-border); /* 增加边框，与两行三列一致 */
+      border-radius: 18px; /* 改为18px，与两行三列一致 */
+      padding: 24px 18px 22px; /* 调整内边距 */
+      color: var(--showcase-text); /* 统一文字色 */
+      display: grid;
+      gap: 14px;
+      box-shadow: none; /* 移除深色阴影，保持简洁 */
+    }
+    .showcase h2 {
+      margin: 0;
+      text-align: center;
+      font-size: 26px;
+      letter-spacing: 0.5px;
+      color: #2f5573; /* 标题色与两行三列一致 */
+    }
+    .showcase-stage {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .showcase-main {
+      position: relative;
+      width: min(92vw, 900px);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #111;
+      border: 1px solid var(--showcase-border); /* 统一边框 */
+    }
+    .showcase-main img, .showcase-main video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .showcase-chip {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(20, 20, 20, 0.8);
+      color: #f5f5f5;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-weight: 700;
+      font-size: 13px;
+      border: 1px solid #333;
+    }
+    .showcase-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.9);
+      color: #222;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* 弱化阴影 */
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .showcase-nav:hover {
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.2); /* 弱化阴影 */
+    }
+    .showcase-nav.left { left: 18px; }
+    .showcase-nav.right { right: 18px; }
+
+    /* 核心：四宫格布局（删除左侧标签列） + 左右双字幕 - 关键修改 */
+    .showcase-quad-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* 仅保留两个视频列，删除标签列 */
+      grid-template-rows: 1fr 1fr auto; /* 两行视频 + 一行字幕 */
+      gap: 15px;
+      width: min(92vw, 900px);
+      align-items: stretch;
+    }
+    /* 视频项样式 - 关键修改：统一背景和边框 */
+    .showcase-video-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--showcase-bg); /* 统一背景 */
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--showcase-border); /* 统一边框 */
+      height: 100%; /* 填充行高 */
+    }
+    .showcase-media {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #fff; /* 视频背景改为白色，更协调 */
+      border: 1px solid #c9d9e5; /* 增加视频边框 */
+    }
+    /* 左右字幕容器 - 关键修改：统一背景、边框、文字色 */
+    .showcase-caption-left {
+      grid-column: 1 / 2; /* 左视频下方 */
+      grid-row: 3;
+      background: #dbe8f4; /* 与carousel-label背景一致 */
+      border: 1px solid var(--showcase-border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #2b4660; /* 与carousel-label文字色一致 */
+      text-align: center;
+    }
+    .showcase-caption-right {
+      grid-column: 2 / 3; /* 右视频下方 */
+      grid-row: 3;
+      background: #dbe8f4; /* 与carousel-label背景一致 */
+      border: 1px solid var(--showcase-border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #2b4660; /* 与carousel-label文字色一致 */
+      text-align: center;
+    }
+
+    .showcase-thumbs {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      width: 100%;
+      padding: 10px calc(50% - 420px);
+      scroll-snap-type: x mandatory;
+      position: relative;
+    }
+    .showcase-thumbs::-webkit-scrollbar { display: none; }
+    .thumb {
+      scroll-snap-align: center;
+      flex-shrink: 0;
+      width: 120px;
+      height: 70px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      background: var(--showcase-bg); /* 统一缩略图背景 */
+      cursor: pointer;
+      transition: all 0.12s ease;
+      position: relative;
+    }
+    .thumb img, .thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .thumb.active {
+      border-color: #7aa6d9; /* 与mode-btn.active边框色一致 */
+      box-shadow: 0 8px 20px rgba(78, 161, 255, 0.15); /* 弱化阴影 */
+      transform: translateY(-2px);
+      z-index: 1;
+    }
+
+    /* 新增两行三列展示区样式 */
+    .two-row-three-col-showcase {
+      background: var(--showcase-bg);
+      border: 1px solid var(--showcase-border);
+      border-radius: 18px;
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+    .two-row-three-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 20px;
+      align-items: stretch;
+    }
+    /* 移动端适配：变为单列 */
+    @media (max-width: 960px) {
+      .two-row-three-col-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, auto);
+        gap: 15px;
+      }
+    }
+    .video-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .video-card-caption {
+      text-align: center;
+      font-style: italic;
+      color: var(--showcase-text);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 8px 0;
+    }
+    /* 空单元格样式（透明占位） */
+    .empty-cell {
+      background: transparent;
+    }
+
+    /* 新增一行两列展示区样式 */
+    .two-column-showcase {
+      background: var(--showcase-bg);
+      border: 1px solid var(--showcase-border);
+      border-radius: 18px;
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+    .two-column-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+    @media (max-width: 768px) {
+      .two-column-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+    .two-column-block {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .two-column-caption {
+      text-align: center;
+      font-style: italic;
+      color: var(--showcase-text);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    /* 新增：两行四列展示区核心样式（左右按钮切换） */
+    .two-row-four-col-showcase {
+      background: var(--showcase-bg);
+      border: 1px solid var(--showcase-border);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+    }
+    /* 左右切换按钮样式 */
+    .two-row-nav-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid #7d7d7d;
+      background: #7d7d7d;
+      color: #ffffff;
+      font-size: 18px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+    .two-row-nav-btn:hover {
+      background: #0569cd;
+    }
+    /* 两行四列网格容器 */
+    .two-row-four-col-grid {
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: auto auto;
+      gap: 20px;
+      align-items: stretch;
+    }
+    /* Caption单元格样式（第二行第一列） */
+    .caption-cell {
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      background: #dbe8f4;
+      color: #2b4660;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.6;
+      text-align: center;
+      font-weight: 600;
+      border: 1px solid var(--showcase-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* 视频单元格样式 */
+    .two-row-video-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .two-row-video-caption {
+      text-align: center;
+      font-style: italic;
+      color: var(--showcase-text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    /* 移动端适配 */
+    @media (max-width: 1200px) {
+      .two-row-four-col-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto auto;
+      }
+      .caption-cell {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
+      }
+    }
+    @media (max-width: 768px) {
+      .two-row-four-col-showcase {
+        flex-direction: column;
+      }
+      .two-row-nav-btn {
+        margin: 5px;
+      }
+      .two-row-four-col-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(7, auto);
+      }
+      .caption-cell {
+        grid-column: 1 / 2;
+        grid-row: 5 / 6;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .showcase-main { width: min(94vw, 100%); }
+      .showcase-nav { width: 38px; height: 38px; }
+      .thumb { width: 100px; height: 60px; }
+      /* 移动端四宫格适配 */
+      .showcase-quad-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, auto); /* 两行视频 + 双字幕 */
+        gap: 10px;
+      }
+      .showcase-caption-left {
+        grid-column: 1;
+        grid-row: 3;
+      }
+      .showcase-caption-right {
+        grid-column: 1;
+        grid-row: 4;
+      }
+      .showcase-media {
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 页面主内容区域 -->
+  <main class="container">
+    <!-- 顶部英雄区：标题、作者、按钮 -->
+    <section class="hero">
+      <div class="hero-content">
+        <!-- 论文标题 -->
+        <h1>IC-Effect: Precise and Efficient Video Effects Editing via In-Context Learning</h1>
+        <!-- 作者与机构 -->
+         <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://github.com/KoTion">Yuanhang Li</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=L2YS0jgAAAAJ&hl=en">Yiren Song</a><sup>2</sup>,
+            </span>
+            <span class="author-block">
+              <a >Junzhe Bai</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a >Xinran Liang</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://github.com/Tigeryang93">Hu Yang</a><sup>3</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://dblp.org/pid/148/1665.html">Libiao Jin</a><sup>1</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=VTQZF6EAAAAJ&hl=zh-CN">Qi Mao</a><sup>1,<i class="fas fa-envelope" style="font-size: 0.8em; vertical-align: text-top;"></i></sup>
+            </span>
+        </div>
+        <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>School of Information and Communication Engineering, Communication University of China</span>
+            <span class="author-block"><sup>2</sup>ShowLab, National University of Singapore</span>
+            <span class="author-block"><sup>3</sup>Baidu Inc.</span>
+        </div>
+        <!-- 一句话简介 -->
+        <!-- <p class="subtitle">一句话描述你的论文贡献，突出方法或效果。</p> -->
+        <!-- 主要外链按钮 -->
+        <div class="cta">
+          <a class="button primary" href="https://arxiv.org" target="_blank"><span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+          </a>
+          <a class="button primary" href="https://arxiv.org" target="_blank"><span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+          </a>
+          <a class="button primary" href="https://github.com/CUC-MIPG/ICEffect" target="_blank"><span class="icon">
+                  <i class="fab fa-github"></i>
+                </span>
+                  <span>Code</span>
+          </a>
+        </div>      
+    </div>
+    </section>
+
+    <!-- 摘要区 -->
+    <section id="abstract" class="section">
+                 <!-- 摘要示例视频/图片 -->
+       <div class="media">
+          <video src="./asserts/teaser.mp4" autoplay loop muted playsinline></video>
+       </div>
+
+      <h2 style="text-align: center;">Abstract</h2>
+      <div class="card">
+        <!-- 摘要正文 -->
+        <p style="margin: 0; color: var(--muted); line-height: 1.7; text-align: justify;">
+We propose <b>IC-Effect</b>, an instruction-guided, DiT-based framework for few-shot video VFX editing that synthesizes complex effects (e.g., flames, particles and cartoon characters) while strictly preserving spatial and temporal consistency. 
+Video VFX editing is highly challenging because injected effects must blend seamlessly with the background, the background must remain entirely unchanged, and effect patterns must be learned efficiently from limited paired data. However, existing video editing models fail to satisfy these requirements. 
+IC-Effect leverages the source video as clean contextual conditions, exploiting the contextual learning capability of DiT models to achieve precise background preservation and natural effect injection. 
+A two-stage training strategy, consisting of general editing adaptation followed by effect-specific learning via EffectLoRA, ensures strong instruction following and robust effect modeling.
+To further improve efficiency, we introduce spatiotemporal sparse tokenization, enabling high fidelity with substantially reduced computation.
+We also release a paired VFX editing dataset spanning 15 high-quality visual styles. 
+Extensive experiments show that IC-Effect delivers high-quality, controllable, and temporally consistent VFX editing, opening new possibilities for video creation.
+        </p>
+        </div>
+    </section>
+
+    <!-- 方法 -->
+    <section id="abstract" class="section">
+      <h2 style="text-align: center;">How Does it Work?</h2>
+      <div class="card">
+        <!-- 摘要正文 -->
+        <p style="margin: 0; color: var(--muted); line-height: 1.7; text-align: justify;">
+Given a source video <span class="math">V<sub>S</sub></span>, IC-Effect first tokenizes it into spatiotemporal sparse tokens <span class="math">Z<sub>S</sub><sup>↓</sup></span> and <span class="math">Z<sub>I</sub></span>. 
+These tokens are concatenated with noisy target tokens <span class="math">Z<sub>T</sub></span> along the token dimension to form a unified sequence, which is fed into a DiT module equipped with causal attention. 
+At the output, <span class="math">Z<sub>S</sub><sup>↓</sup></span> and <span class="math">Z<sub>I</sub></span> are discarded, and only the target tokens <span class="math">Z<sub>T</sub></span> are decoded by a VAE to produce the edited video.
+During training, we first fine-tune the model with high-rank LoRA to acquire general video editing and instruction-following capabilities, and then further fine-tune it with low-rank LoRA on a small set of paired visual effects data to accurately capture the stylistic characteristics of diverse effects. 
+        </p>
+      </div>
+      <!-- 摘要示例视频/图片 -->
+      <div class="media full-width-media">
+        <img src="./asserts/pipeline.png" alt="Pipeline Diagram" style="width: 100%; height: auto; object-fit: contain;">
+      </div>
+    </section>
+ 
+
+    <!-- 单输入大图展示：四宫格（删除左侧标签） + 左右双字幕 -->
+    <section class="section">
+    <h2 style="text-align: center;">Video VFX Editing of IC-Effect</h2>
+      <div class="showcase">
+        <div class="showcase-stage">
+          <button class="showcase-nav left" id="showcase-prev" aria-label="previous">‹</button>
+          <div class="showcase-quad-grid">
+            <!-- 第一行：仅保留两个视频（删除左侧input标签） -->
+            <div class="showcase-video-item">
+              <video id="showcase-input1" src="" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="showcase-media"></video>
+            </div>
+            <div class="showcase-video-item">
+              <video id="showcase-input2" src="" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="showcase-media"></video>
+            </div>
+            
+            <!-- 第二行：仅保留两个视频（删除左侧result标签） -->
+            <div class="showcase-video-item">
+              <video id="showcase-result1" src="" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="showcase-media"></video>
+            </div>
+            <div class="showcase-video-item">
+              <video id="showcase-result2" src="" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="showcase-media"></video>
+            </div>
+
+            <!-- 第三行：左右独立字幕（删除空单元格） -->
+            <div class="showcase-caption-left">
+              <strong>Instruction:</strong> <span id="showcase-instruction1"></span>
+            </div>
+            <div class="showcase-caption-right">
+              <strong>Instruction:</strong> <span id="showcase-instruction2"></span>
+            </div>
+          </div>
+          <button class="showcase-nav right" id="showcase-next" aria-label="next">›</button>
+        </div>
+        <div class="showcase-thumbs" id="showcase-thumbs"></div>
+      </div>
+    </section>
+
+    <!-- 新增：两行三列展示区 -->
+    <section class="section">
+      <h2 style="text-align: center;">Control of instruction</h2>
+      <div class="two-row-three-col-showcase">
+        <div class="two-row-three-col-grid">
+          <!-- 第一行第一列：空单元格 -->
+          <div class="video-card">
+            <div class="carousel-media">
+              <video src="./asserts/multi_prompt/input1_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+            <div class="video-card-caption">
+            </div>
+          </div>
+          
+          <!-- 第一行第二列：视频 + caption -->
+          <div class="video-card">
+            <div class="carousel-media">
+              <video src="./asserts/multi_prompt/result1_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+            <div class="video-card-caption">
+              Add a red light particle line shuttle effect from back to front on roads.
+            </div>
+          </div>
+          
+          <!-- 第一行第三列：视频 + caption -->
+          <div class="video-card">
+            <div class="carousel-media">
+              <video src="./asserts/multi_prompt/result11_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+            <div class="video-card-caption">
+              Add a yellow light particle line shuttle effect from front to back on roads.
+            </div>
+          </div>
+          
+          <!-- 第二行第一列：空单元格 -->
+          <div class="video-card">
+            <div class="carousel-media">
+              <video src="./asserts/multi_prompt/input2_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+            <div class="video-card-caption">
+            </div>
+          </div>
+          
+          <!-- 第二行第二列：视频 + caption -->
+          <div class="video-card">
+            <div class="carousel-media">
+              <video src="./asserts/multi_prompt/result2_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+            <div class="video-card-caption">
+              Add a red lightning effect to the edge of the stone cross.
+            </div>
+          </div>
+          
+          <!-- 第二行第三列：视频 + caption -->
+          <div class="video-card">
+            <div class="carousel-media">
+              <video src="./asserts/multi_prompt/result21_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+            <div class="video-card-caption">
+              Add a purple lightning effect to the edge of the stone cross.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 新增：一行两列展示区 -->
+    <section class="section">
+      <h2 style="text-align: center;">Video Multi VFX Editing</h2>
+      <div class="two-column-showcase">
+        <div class="two-column-grid">
+          <!-- 左侧列 -->
+          <div class="two-column-block">
+            <!-- <span class="carousel-label">Original Video</span> -->
+            <div class="carousel-media">
+              <video src="./asserts/multi_effect/input1_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <!-- 右侧列 -->
+          <div class="two-column-block">
+            <!-- <span class="carousel-label" style="background:#d5eac1; color:#2a4c1f;">Our Result</span> -->
+            <div class="carousel-media">
+              <video src="./asserts/multi_effect/result1_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+        </div>
+        <!-- 单个居中显示的caption -->
+        <div class="two-column-caption">
+          Add a graffiti effect from left to right on the sky. Add a particle aggregation effect to the woman by the seaside.
+        </div>
+        <div class="two-column-grid">
+          <!-- 左侧列 -->
+          <div class="two-column-block">
+            <!-- <span class="carousel-label">Original Video</span> -->
+            <div class="carousel-media">
+              <video src="./asserts/multi_effect/input2_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <!-- 右侧列 -->
+          <div class="two-column-block">
+            <!-- <span class="carousel-label" style="background:#d5eac1; color:#2a4c1f;">Our Result</span> -->
+            <div class="carousel-media">
+              <video src="./asserts/multi_effect/result2_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+        </div>
+        <!-- 单个居中显示的caption -->
+        <div class="two-column-caption">
+          Add a purple flame burning special effect on the sofa. Add a particle spread effect to the man on the sofa.
+        </div>
+      </div>
+    </section>
+
+    <!-- 结果展示区：轮播，可前后切换且循环 -->
+    <section id="results" class="section">
+    <h2 style="text-align: center;">Comparison of Common Video Editing</h2>
+      <!-- 模式切换按钮，放在框外上方 -->
+      <div class="mode-tabs" id="mode-tabs" style="margin-bottom:12px;">
+        <button class="mode-btn active" data-mode="add">Subject Add</button>
+        <button class="mode-btn" data-mode="remove">Subject Remove</button>
+        <button class="mode-btn" data-mode="edit">Subject Swap</button>
+        <button class="mode-btn" data-mode="style">Style Transfer</button>
+        <button class="mode-btn" data-mode="attr">Attribute modification</button>
+      </div>
+
+      <div class="carousel">
+        <div class="carousel-header">
+          <div class="carousel-controls">
+            <span id="current-mode" style="font-weight: bold; color: #2f5573;">Subject Add</span>
+            <button class="carousel-btn" id="prev-slide" aria-label="previous slide">‹</button>
+            <span>Previous</span>
+            <span>Next</span>
+            <button class="carousel-btn" id="next-slide" aria-label="next slide">›</button>
+          </div>
+        </div>
+
+        <div class="carousel-grid">
+          <!-- 第一行：六个视频格子 -->
+          <div class="carousel-block" style="grid-column: 1; grid-row: 1;">
+            <span class="carousel-label">Source Video</span>
+            <div class="carousel-media">
+                <video id="slide-source" src="" controls autoplay loop muted playsinline preload="auto" type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-hidden"></video>
+                <img id="slide-source-img" src="" alt="Source Video" class="media-hidden">
+            </div>
+          </div>
+
+          <div class="carousel-block" style="grid-column: 2; grid-row: 1;">
+            <span class="carousel-label" style="background:#d5eac1; color:#2a4c1f;">Ours</span>
+            <div class="carousel-media">
+                <video id="slide-result" src="" controls autoplay loop muted playsinline preload="auto" type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-hidden"></video>
+                <img id="slide-result-img" src="" alt="Result Video" class="media-hidden">
+            </div>
+          </div>
+
+          <div class="carousel-block" style="grid-column: 3; grid-row: 1;">
+            <span class="carousel-label">InsV2V</span>
+            <div class="carousel-media">
+                <video id="slide-reference" src="" controls autoplay loop muted playsinline preload="auto" type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-hidden"></video>
+                <img id="slide-reference-img" src="" alt="Reference Video" class="media-hidden">
+            </div>
+          </div>
+
+
+          <!-- 第二行：六个视频格子 -->
+          <div class="carousel-block" style="grid-column: 1; grid-row: 2;">
+            <span class="carousel-label">InsViE</span>
+            <div class="carousel-media">
+                <video id="slide-input" src="" controls autoplay loop muted playsinline preload="auto" type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-hidden"></video>
+                <img id="slide-input-img" src="" alt="Input Video" class="media-hidden">
+            </div>
+          </div>
+
+          <div class="carousel-block" style="grid-column: 2; grid-row: 2;">
+            <span class="carousel-label">VACE</span>
+            <div class="carousel-media">
+                <video id="slide-process" src="" controls autoplay loop muted playsinline preload="auto" type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-hidden"></video>
+                <img id="slide-process-img" src="" alt="Process Video" class="media-hidden">
+            </div>
+          </div>
+
+          <div class="carousel-block" style="grid-column: 3; grid-row: 2;">
+            <span class="carousel-label" style="background:#dbe8f4; color:#2b4660;">Lucy Edit</span>
+            <div class="carousel-media">
+                <video id="slide-output" src="" controls autoplay loop muted playsinline preload="auto" type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-hidden"></video>
+                <img id="slide-output-img" src="" alt="Output Video" class="media-hidden">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Caption 移到最下面 -->
+        <div style="margin-top: 10px; text-align: center;">
+          <div class="carousel-text" id="slide-caption" style="max-width: none; font-style: italic; color: #666;">
+            a single white swan swimming on the surface of a body of water.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 新增：两行四列展示区（左右按钮切换） -->
+    <section class="section">
+      <h2 style="text-align: center;">Comparison of Video VFX Editing</h2>
+      <div class="two-row-four-col-showcase">
+        <!-- 左侧切换按钮 -->
+        <button class="two-row-nav-btn" id="two-row-prev" aria-label="previous">‹</button>
+        
+        <!-- 两行四列网格容器 -->
+        <div class="two-row-four-col-grid" id="two-row-grid">
+          <!-- 第一行：四个视频单元格 -->
+          <div class="two-row-video-cell">
+            <span class="carousel-label">VFX Data</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/ref_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <div class="two-row-video-cell">
+            <span class="carousel-label">Source Video</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/src_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <div class="two-row-video-cell">
+            <span class="carousel-label" style="background:#d5eac1; color:#2a4c1f;">Ours</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/ours_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <div class="two-row-video-cell">
+            <span class="carousel-label">InsV2V</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/InsV2V_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          
+          <!-- 第二行第一列：Caption单元格（无视频） -->
+         <div class="two-row-video-cell">
+            <span class="carousel-label">Instruction</span>
+            <div class="caption-cell" id="two-row-caption">
+            Key Findings: Our method achieves 30% better frame consistency and 25% improved temporal coherence compared to baseline methods, with no loss of detail preservation.
+          </div>
+         </div>
+          <!-- <div class="caption-cell" id="two-row-caption">
+            Key Findings: Our method achieves 30% better frame consistency and 25% improved temporal coherence compared to baseline methods, with no loss of detail preservation.
+          </div> -->
+          
+          <!-- 第二行剩余三个视频单元格 -->
+          <div class="two-row-video-cell">
+            <span class="carousel-label">InsViE</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/InsViE_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <div class="two-row-video-cell">
+            <span class="carousel-label">VACE</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/lucyedit_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+          <div class="two-row-video-cell">
+            <span class="carousel-label">Lucy Edit</span>
+            <div class="carousel-media">
+              <video src="./asserts/vfx/15/vace_.mp4" controls autoplay loop muted playsinline type="video/mp4; codecs=&quot;mp4v.20.8, mp4a.40.2&quot;" class="media-visible"></video>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧切换按钮 -->
+        <button class="two-row-nav-btn" id="two-row-next" aria-label="next">›</button>
+      </div>
+    </section>
+
+    <!-- 方法亮点 -->
+    <!-- <section class="section"> -->
+      <!-- <h2>方法亮点</h2> -->
+      <!-- <div class="grid"> -->
+        <!-- 创新点 1 -->
+        <!-- <div class="card"> -->
+          <!-- <strong>创新点 1</strong> -->
+          <!-- <p style="margin: 8px 0 0; color: var(--muted);">一句话概括你方法的关键创新。</p> -->
+        <!-- </div> -->
+        <!-- 创新点 2 -->
+        <!-- <div class="card"> -->
+          <!-- <strong>创新点 2</strong> -->
+          <!-- <p style="margin: 8px 0 0; color: var(--muted);">说明实验或性能指标上的提升。</p> -->
+        <!-- </div> -->
+        <!-- 创新点 3 -->
+        <!-- <div class="card"> -->
+          <!-- <strong>创新点 3</strong> -->
+          <!-- <p style="margin: 8px 0 0; color: var(--muted);">补充可视化、效率或泛化性的优势。</p> -->
+        <!-- </div> -->
+      <!-- </div> -->
+    <!-- </section> -->
+
+    <!-- BibTeX 引用 -->
+    <section id="bibtex" class="section">
+        <h2>BibTeX</h2>
+        <pre>
+  @inproceedings{your2025paper,
+    title     = {Your Paper Title},
+    author    = {Author, A. and Author, B. and Author, C.},
+    booktitle = {Conference on Awesome Results},
+    year      = {2025}
+  }
+        </pre>
+      </section>
+
+  </main>
+
+  <!-- 结果轮播脚本：模式切换 + 循环切换前一项/后一项 -->
+  <script>
+    let currentMode = "add";
+    let current = 0;
+
+    // DOM 引用 - 更新为六个视频元素
+    const captionEl = document.getElementById("slide-caption");
+    const sourceEl = document.getElementById("slide-source");
+    const sourceElImg = document.getElementById("slide-source-img");
+    const refEl = document.getElementById("slide-reference");
+    const refElImg = document.getElementById("slide-reference-img");
+    const resultEl = document.getElementById("slide-result");
+    const resultElImg = document.getElementById("slide-result-img");
+    const inputEl = document.getElementById("slide-input");
+    const inputElImg = document.getElementById("slide-input-img");
+    const processEl = document.getElementById("slide-process");
+    const processElImg = document.getElementById("slide-process-img");
+    const outputEl = document.getElementById("slide-output");
+    const outputElImg = document.getElementById("slide-output-img");
+    const prevBtn = document.getElementById("prev-slide");
+    const nextBtn = document.getElementById("next-slide");
+    const modeTabs = document.getElementById("mode-tabs");
+
+    // 判断文件是否为视频
+    const isVideoFile = (url) => {
+      if (!url) return false;
+      const ext = url.toLowerCase().split('.').pop().split('?')[0]; // 处理带查询参数的URL
+      return ['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(ext);
+    };
+
+    // 渲染当前 slide
+    function renderSlide() {
+      const slides = modeSlides[currentMode];
+      const item = slides[current];
+      captionEl.textContent = item.caption;
+      
+      // 辅助函数：设置视频元素
+      const setVideoElement = (videoEl, imgEl, url) => {
+        if (!url) {
+          videoEl.classList.add("media-hidden");
+          videoEl.classList.remove("media-visible");
+          imgEl.classList.add("media-hidden");
+          imgEl.classList.remove("media-visible");
+          return;
+        }
+        
+        if (isVideoFile(url)) {
+          // 先隐藏图片
+          imgEl.classList.add("media-hidden");
+          imgEl.classList.remove("media-visible");
+          imgEl.src = "";
+          
+          // 设置视频源并显示
+          videoEl.src = url;
+          videoEl.classList.remove("media-hidden");
+          videoEl.classList.add("media-visible");
+          
+          // 清除之前的错误处理
+          videoEl.onerror = null;
+          videoEl.onloadeddata = null;
+          
+          // 加载视频
+          videoEl.load();
+          
+          // 添加错误处理
+          videoEl.onerror = (e) => {
+            console.error("视频加载失败:", url, e);
+            videoEl.classList.add("media-hidden");
+            videoEl.classList.remove("media-visible");
+            // 视频加载失败时不显示图片，保持空白
+          };
+          
+          // 视频加载成功后尝试播放
+          videoEl.onloadeddata = () => {
+            console.log("视频加载成功:", url);
+            videoEl.play().catch(e => {
+              console.log("自动播放失败（可能需要用户交互）:", e);
+            });
+          };
+          
+          // 添加加载开始事件
+          videoEl.onloadstart = () => {
+            console.log("开始加载视频:", url);
+          };
+        } else {
+          // 图片模式
+          videoEl.classList.add("media-hidden");
+          videoEl.classList.remove("media-visible");
+          videoEl.src = "";
+          imgEl.src = url;
+          imgEl.classList.remove("media-hidden");
+          imgEl.classList.add("media-visible");
+        }
+      };
+      
+      // 设置所有视频元素 - 使用占位视频
+      setVideoElement(sourceEl, sourceElImg, item.source);
+      setVideoElement(refEl, refElImg, item.reference);
+      setVideoElement(resultEl, resultElImg, item.ours);
+      setVideoElement(inputEl, inputElImg, item.input);
+      setVideoElement(processEl, processElImg, item.process);
+      setVideoElement(outputEl, outputElImg, item.output);
+    }
+
+    // 切换到上一条，循环到末尾
+    prevBtn.addEventListener("click", () => {
+      const slides = modeSlides[currentMode];
+      current = (current - 1 + slides.length) % slides.length;
+      renderSlide();
+    });
+
+    // 切换到下一条，循环回第一条
+    nextBtn.addEventListener("click", () => {
+      const slides = modeSlides[currentMode];
+      current = (current + 1) % slides.length;
+      renderSlide();
+    });
+
+    // DOM 引用 - 添加当前模式显示元素
+    const currentModeEl = document.getElementById("current-mode");
+    
+    // 模式切换按钮
+    modeTabs.addEventListener("click", (e) => {
+      const btn = e.target.closest(".mode-btn");
+      if (!btn) return;
+      const mode = btn.dataset.mode;
+      if (!modeSlides[mode]) return;
+      currentMode = mode;
+      current = 0;
+      // 切换激活态
+      modeTabs.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      // 更新当前模式显示
+      updateCurrentModeDisplay();
+      renderSlide();
+    });
+    
+    // 更新当前模式显示函数
+    function updateCurrentModeDisplay() {
+      const modeNames = {
+        "add": "Subject Add",
+        "remove": "Subject Remove", 
+        "edit": "Subject Swap",
+        "style": "Style Transfer",
+        "attr": "Attribute modification"
+      };
+      currentModeEl.textContent = modeNames[currentMode] || "Subject Add";
+    }
+
+    // 首次渲染和模式显示
+    updateCurrentModeDisplay();
+    renderSlide();
+
+    // ========== 单输入展示区脚本修改 ==========
+    let showcaseIndex = 0;
+    // 双字幕DOM引用
+    const showcaseInstruction1 = document.getElementById("showcase-instruction1");
+    const showcaseInstruction2 = document.getElementById("showcase-instruction2");
+    const showcaseThumbs = document.getElementById("showcase-thumbs");
+    const showcasePrev = document.getElementById("showcase-prev");
+    const showcaseNext = document.getElementById("showcase-next");
+
+    // 四宫格视频DOM引用
+    const showcaseInput1 = document.getElementById("showcase-input1");
+    const showcaseInput2 = document.getElementById("showcase-input2");
+    const showcaseResult1 = document.getElementById("showcase-result1");
+    const showcaseResult2 = document.getElementById("showcase-result2");
+
+    // 判断文件是否为视频
+    const isVideo = (url) => {
+      if (!url) return false;
+      const ext = url.toLowerCase().split('.').pop();
+      return ['mp4', 'webm', 'ogg', 'mov', 'avi'].includes(ext);
+    };
+
+    const centerThumb = (idx) => {
+      const targetEl = showcaseThumbs.querySelector(`.thumb[data-index="${idx}"]`);
+      if (!targetEl) return;
+
+      // 等待布局稳定后精确计算
+      requestAnimationFrame(() => {
+        if (!targetEl.offsetParent) return; // 确保元素在DOM中
+        
+        const containerWidth = showcaseThumbs.clientWidth;
+        const thumbWidth = targetEl.offsetWidth;
+        const gap = 10; // 缩略图间隙
+        
+        // 获取所有缩略图的DOM元素
+        const allThumbs = Array.from(showcaseThumbs.querySelectorAll('.thumb'));
+        const targetPosition = allThumbs.findIndex(el => parseInt(el.dataset.index) === idx);
+        
+        if (targetPosition === -1) return;
+        
+        // 精确计算选中缩略图的左侧位置（考虑实际渲染位置）
+        let thumbLeft = 0;
+        for (let i = 0; i < targetPosition; i++) {
+          thumbLeft += allThumbs[i].offsetWidth + gap;
+        }
+        
+        // 计算需要滚动的距离：让选中缩略图居中
+        const targetScroll = thumbLeft - (containerWidth / 2) + (thumbWidth / 2);
+        
+        // 确保滚动范围在有效边界内
+        const maxScroll = showcaseThumbs.scrollWidth - containerWidth;
+        const clampedScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+        
+        // 只在需要滚动时才执行滚动操作
+        if (Math.abs(showcaseThumbs.scrollLeft - clampedScroll) > 1) {
+          showcaseThumbs.scrollTo({ 
+            left: clampedScroll, 
+            behavior: "smooth" 
+          });
+        }
+      });
+    };
+
+    function renderShowcaseThumbs() {
+      showcaseThumbs.innerHTML = "";
+      
+      const totalThumbs = showcaseData.length;
+      const sideCount = 3; // 左右各显示3个
+      const visibleCount = sideCount * 2 + 1; // 总共显示7个
+
+      if (totalThumbs === 0) return;
+      
+      // 确保选中索引在有效范围内
+      showcaseIndex = Math.max(0, Math.min(showcaseIndex, totalThumbs - 1));
+
+      // 生成要显示的缩略图索引列表（支持循环）
+      const showIndexes = [];
+      for (let i = -sideCount; i <= sideCount; i++) {
+        // 计算循环索引：处理首尾衔接
+        let index = (showcaseIndex + i + totalThumbs) % totalThumbs;
+        showIndexes.push(index);
+      }
+
+      // 创建并添加缩略图元素
+      showIndexes.forEach(index => {
+        const isActive = index === showcaseIndex;
+        createThumbElement(index, isActive);
+      });
+
+      function createThumbElement(index, isActive) {
+        const btn = document.createElement("button");
+        btn.className = "thumb";
+        if (isActive) {
+          btn.classList.add("active");
+        }
+        btn.dataset.index = index;
+        
+        const item = showcaseData[index];
+        const src = item.thumb;
+        if (isVideo(src)) {
+          const video = document.createElement("video");
+          video.src = src;
+          video.muted = true;
+          video.loop = true;
+          video.playsInline = true;
+          video.autoplay = true;
+          video.alt = "source thumb " + (index + 1);
+          btn.appendChild(video);
+        } else {
+          const img = document.createElement("img");
+          img.src = src;
+          img.alt = "source thumb " + (index + 1);
+          btn.appendChild(img);
+        }
+        btn.addEventListener("click", () => {
+          showcaseIndex = index;
+          renderShowcase();
+        });
+        showcaseThumbs.appendChild(btn);
+      }
+    }
+
+    function renderShowcase() {
+      const item = showcaseData[showcaseIndex];
+      
+      // 为四个视频设置内容的函数
+      const setShowcaseVideo = (videoEl, url) => {
+        if (isVideo(url)) {
+          videoEl.src = url;
+          videoEl.load();
+          videoEl.play().catch(e => {
+            console.log("视频自动播放失败:", e);
+          });
+        }
+      };
+      
+      // 设置四个视频的内容
+      setShowcaseVideo(showcaseInput1, item.input1);
+      setShowcaseVideo(showcaseInput2, item.input2);
+      setShowcaseVideo(showcaseResult1, item.result1);
+      setShowcaseVideo(showcaseResult2, item.result2);
+      
+      // 分别设置左右侧字幕
+      showcaseInstruction1.textContent = item.instruction1 || '';
+      showcaseInstruction2.textContent = item.instruction2 || '';
+      
+      // 更新active状态，基于缩略图的data-index属性
+      showcaseThumbs.querySelectorAll(".thumb").forEach((el) => {
+        const dataIndex = parseInt(el.dataset.index);
+        el.classList.toggle("active", dataIndex === showcaseIndex);
+      });
+      
+      // 重新渲染缩略图（确保选中项始终居中）
+      renderShowcaseThumbs();
+      // 居中当前选中的缩略图
+      centerThumb(showcaseIndex);
+    }
+
+    showcasePrev.addEventListener("click", () => {
+      showcaseIndex = (showcaseIndex - 1 + showcaseData.length) % showcaseData.length;
+      renderShowcase();
+    });
+    showcaseNext.addEventListener("click", () => {
+      showcaseIndex = (showcaseIndex + 1 + showcaseData.length) % showcaseData.length;
+      renderShowcase();
+    });
+
+    // 允许拖动缩略图条滚动
+    let isDragging = false, startX = 0, scrollStart = 0;
+    showcaseThumbs.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      scrollStart = showcaseThumbs.scrollLeft;
+    });
+    showcaseThumbs.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      showcaseThumbs.scrollLeft = scrollStart - dx;
+    });
+    const stopDrag = () => { isDragging = false; };
+    showcaseThumbs.addEventListener("pointerup", stopDrag);
+    showcaseThumbs.addEventListener("pointerleave", stopDrag);
+    showcaseThumbs.addEventListener("pointercancel", stopDrag);
+
+    // 初始化
+    renderShowcaseThumbs();
+    renderShowcase();
+
+    // ========== 新增：两行四列展示区切换脚本 ==========
+    let twoRowCurrentIndex = 0;
+    const twoRowPrevBtn = document.getElementById("two-row-prev");
+    const twoRowNextBtn = document.getElementById("two-row-next");
+    const twoRowGrid = document.getElementById("two-row-grid");
+    const twoRowCaption = document.getElementById("two-row-caption");
+
+    // 修复：渲染两行四列展示区（完整覆盖所有视频单元格）
+    function renderTwoRow() {
+        const currentData = twoRowData[twoRowCurrentIndex];
+        
+        // 更新caption文本
+        twoRowCaption.textContent = currentData.caption;
+        
+        // 1. 获取所有视频容器（包含video标签的元素）
+        const videoContainers = twoRowGrid.querySelectorAll(".carousel-media");
+        // 2. 获取所有视频单元格（用于字幕更新）
+        const videoCells = twoRowGrid.querySelectorAll(".two-row-video-cell");
+
+        // 3. 遍历更新每个视频
+        videoContainers.forEach((container, index) => {
+        // 确保索引不越界
+        if (index >= currentData.videos.length) return;
+        
+        const videoData = currentData.videos[index];
+        const videoEl = container.querySelector("video");
+        
+        // 重置视频状态
+        videoEl.pause(); // 暂停当前视频
+        videoEl.src = ""; // 清空原有src
+        videoEl.load();   // 重置加载状态
+        
+        // 设置新视频源
+        videoEl.src = videoData.src;
+        
+        // 重新加载并尝试播放
+        videoEl.load();
+        videoEl.play().catch(e => {
+            console.log("自动播放失败（需要用户交互）:", e);
+        });
+
+        // 4. 更新对应单元格的字幕（如果有）
+        if (index < videoCells.length) {
+            const captionEl = videoCells[index].querySelector(".two-row-video-caption");
+            if (captionEl) {
+            captionEl.textContent = videoData.caption || "";
+            }
+        }
+        });
+    }
+
+    // 修复：左侧按钮切换上一组（增加边界检查）
+    twoRowPrevBtn.addEventListener("click", () => {
+        twoRowCurrentIndex = (twoRowCurrentIndex - 1 + twoRowData.length) % twoRowData.length;
+        console.log("切换到上一组，当前索引：", twoRowCurrentIndex); // 调试日志
+        renderTwoRow();
+    });
+
+    // 修复：右侧按钮切换下一组（增加边界检查）
+    twoRowNextBtn.addEventListener("click", () => {
+        twoRowCurrentIndex = (twoRowCurrentIndex + 1) % twoRowData.length;
+        console.log("切换到下一组，当前索引：", twoRowCurrentIndex); // 调试日志
+        renderTwoRow();
+    });
+
+    // 初始化两行四列展示区（确保首次加载）
+    renderTwoRow();
+
+  </script>
+</body>
+</html>
