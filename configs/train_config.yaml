@@ -1,0 +1,39 @@
+experiment_project: 'IC-Effect'
+experiment_name: 'EffectLoRA'
+model_id:     "/path-to-model/"
+output_root: '/path-to-output/'
+use_DiffSynth: True
+use_drop_text: True
+use_lora: True
+lora_rank: 32
+
+training:
+  resume_path: ~
+  batch_size: 2
+  max_steps: 500
+  warmup_steps: 10
+  learning_rate: 1e-4
+  weight_decay: 1e-2 # 一般和学习率差两个数量级
+  save_val_interval_steps: 250 # 保存以及验证的步数
+  accumulate_grad_batches: 1
+  gradient_clip_val: 1.0
+  precision: "bf16-mixed"
+  accelerator: "auto"
+  strategy: 'auto' # deepspeed 会更节省内存
+  gradient_checkpointing: True
+  benchmark: False
+
+dataset:
+  video_root:  '/path-to-target/'
+  video_root2: '/path-to-source/'
+  first_root:  '/path-to-firstframe/'
+  is_one2three: False
+  height: 224
+  width: 416
+  sample_n_frames: 81
+  fps: 24
+  num_workers: 8
+  shuffle: True
+  drop_last: True 
+  pin_memory: True
+  down_scale: 2
